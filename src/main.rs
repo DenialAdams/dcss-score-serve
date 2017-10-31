@@ -43,8 +43,8 @@ struct IndexContext {
 
 #[derive(Serialize)]
 struct FormattedMorgue {
-    pub file_name: String,
     pub name: String,
+    pub real_name: String,
     pub score: i64,
     pub race: String,
     pub background: String,
@@ -54,9 +54,19 @@ impl From<models::DbMorgue> for FormattedMorgue {
     fn from(morgue: models::DbMorgue) -> FormattedMorgue {
         let race = unsafe { std::mem::transmute::<i64, Race>(morgue.race) };
         let background = unsafe { std::mem::transmute::<i64, Background>(morgue.background) };
+        let real_name = match morgue.name.as_ref() {
+            "brick" => "Richard",
+            "Peen" => "Paul",
+            "max"|"PunishedMax" => "Max",
+            "daddy" => "James",
+            "sweetBro" => "Luca",
+            "hellaJeff" => "Ben H",
+            "Richard" => "Ben S",
+            _ => "?"
+        };
         FormattedMorgue {
-            file_name: morgue.file_name,
             name: morgue.name,
+            real_name: String::from(real_name),
             score: morgue.score,
             race: format!("{:?}", race),
             background: format!("{:?}", background)
