@@ -9,7 +9,6 @@
     <div id="content">
       <table>
         <tr>
-          <th>Real Name</th>
           <th>Name</th>
           <th>Score</th>
           <th>Species</th>
@@ -17,8 +16,7 @@
         </tr>
         {{#each morgues}}
           <tr>
-            <td>{{ real_name }}</td>
-            <td>{{ name }}</td>
+            <td><span title={{ real_name }}>{{ name }}</span></td>
             <td>{{ score }}</td>
             <td>{{ race }}</td>
             <td>{{ background }}</td>
