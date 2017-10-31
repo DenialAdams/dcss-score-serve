@@ -43,8 +43,8 @@ struct IndexContext {
 
 #[derive(Serialize)]
 struct FormattedMorgue {
-    pub name: String,
     pub real_name: String,
+    pub name: String,
     pub score: i64,
     pub race: String,
     pub background: String,
