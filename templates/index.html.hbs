@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="index.css">
+    <meta charset="utf-8" />
+    <title></title>
+  </head>
+  <body>
+    <div id="content">
+      <table>
+        <tr>
+          <th>Name</th>
+          <th>Score</th>
+          <th>Species</th>
+          <th>Background</th>
+        </tr>
+        {{#each morgues}}
+          <tr>
+            <td>{{ name }}</td>
+            <td>{{ score }}</td>
+            <td>{{ race }}</td>
+            <td>{{ background }}</td>
+          </tr>
+        {{/each}}
+      </table>
+    </div>
+  </body>
+</html>

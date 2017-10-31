@@ -1,0 +1,28 @@
+body {
+  display: flex;
+  justify-content: center;
+}
+
+table {
+  border-collapse: collapse;
+  width: 50vw;
+  height: 50vh;
+}
+
+th,td {
+  border: 1px solid black;
+  width: 25vw;
+}
+
+td {
+  padding: 7px;
+}
+
+tr:nth-child(even) td { background: #F1F1F1; }
+
+tr:nth-child(odd) td { background: #FEFEFE; }
+
+th {  
+  background: #DFDFDF;  /* Darken header a bit */
+  font-weight: bold;
+}
