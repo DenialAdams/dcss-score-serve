@@ -38,7 +38,30 @@ type DatabasePool = r2d2::Pool<r2d2_diesel::ConnectionManager<diesel::SqliteConn
 
 #[derive(Serialize)]
 struct IndexContext {
-    morgues: Vec<models::DbMorgue>,
+    morgues: Vec<FormattedMorgue>,
+}
+
+#[derive(Serialize)]
+struct FormattedMorgue {
+    pub file_name: String,
+    pub name: String,
+    pub score: i64,
+    pub race: String,
+    pub background: String,
+}
+
+impl From<models::DbMorgue> for FormattedMorgue {
+    fn from(morgue: models::DbMorgue) -> FormattedMorgue {
+        let race = unsafe { std::mem::transmute::<i64, Race>(morgue.race) };
+        let background = unsafe { std::mem::transmute::<i64, Background>(morgue.background) };
+        FormattedMorgue {
+            file_name: morgue.file_name,
+            name: morgue.name,
+            score: morgue.score,
+            race: format!("{:?}", race),
+            background: format!("{:?}", background)
+        }
+    }
 }
 
 
@@ -53,8 +76,8 @@ fn hiscores(state: State<DatabasePool>) -> Template {
             .load::<models::DbMorgue>(&*connection)
             .expect("Error loading morgues")
     };
-    morgues.sort_by(|x, y| y.score.partial_cmp(&x.score).unwrap() );
-    let context = IndexContext { morgues: morgues };
+    let formatted_morgues = morgues.into_iter().map(|x| x.into() ).collect();
+    let context = IndexContext { morgues: formatted_morgues };
     Template::render("index", &context)
 }
 
@@ -75,4 +98,75 @@ fn main() {
         .manage(pool)
         .attach(Template::fairing())
         .launch();
+}
+
+#[derive(Debug, Clone, Copy)]
+#[repr(i64)]
+enum Race {
+    Barachi = 0,
+    Centaur,
+    DeepDwarf,
+    DeepElf,
+    Demigod,
+    Demonspawn,
+    Draconian,
+    RedDraconian,
+    WhiteDraconian,
+    GreenDraconian,
+    YellowDraconian,
+    GreyDraconian,
+    BlackDraconian,
+    PurpleDraconian,
+    MottledDraconian,
+    PaleDraconian,
+    Felid,
+    Formicid,
+    Gargoyle,
+    Ghoul,
+    Gnoll,
+    Halfling,
+    HighElf,
+    HillOrc,
+    Human,
+    Kobold,
+    Merfolk,
+    Minotaur,
+    Mummy,
+    Naga,
+    Ocotopode,
+    Ogre,
+    Spriggan,
+    Tengu,
+    Troll,
+    Vampire,
+    VineStalker,
+}
+
+#[derive(Debug, Clone, Copy)]
+#[repr(i64)]
+enum Background {
+    Fighter = 0,
+    Gladiator,
+    Monk,
+    Hunter,
+    Assassin,
+    Berserker,
+    AbyssalKnight,
+    ChaosKnight,
+    Skald,
+    Enchanter,
+    Transmuter,
+    ArcaneMarksman,
+    Warper,
+    Wizard,
+    Conjurer,
+    Summoner,
+    Necromancer,
+    FireElementalist,
+    IceElementalist,
+    AirElementalist,
+    EarthElementalist,
+    VenomMage,
+    Artificer,
+    Wanderer,
 }
