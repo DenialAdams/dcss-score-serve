@@ -58,7 +58,7 @@ impl From<models::DbMorgue> for FormattedMorgue {
             "brick" => "Richard",
             "Peen" => "Paul",
             "max"|"PunishedMax" => "Max",
-            "daddy" => "James",
+            "daddy"|"fuckboy3000" => "James",
             "sweetBro" => "Luca",
             "hellaJeff" => "Ben H",
             "Richard" => "Ben S",
