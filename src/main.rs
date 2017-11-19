@@ -59,6 +59,23 @@ impl<'a> rocket::request::FromParam<'a> for Background {
     }
 }
 
+struct God(crawl_model::data::God);
+
+impl Deref for God {
+    type Target = crawl_model::data::God;
+    fn deref(&self) -> &crawl_model::data::God {
+        &self.0
+    }
+}
+
+impl<'a> rocket::request::FromParam<'a> for God {
+    type Error = ();
+    fn from_param(param: &'a rocket::http::RawStr) -> Result<God, ()> {
+        let god = param.percent_decode_lossy().parse::<crawl_model::data::God>()?;
+        Ok(God(god))
+    }
+}
+
 
 #[derive(Serialize)]
 struct IndexContext {
@@ -72,13 +89,15 @@ struct FormattedGame {
     pub score: i64,
     pub species: String,
     pub background: String,
+    pub god: String
 }
 
 impl From<crawl_model::db_model::Game> for FormattedGame {
     fn from(game: crawl_model::db_model::Game) -> FormattedGame {
         let species = unsafe { std::mem::transmute::<i64, crawl_model::data::Species>(game.species_id) };
         let background = unsafe { std::mem::transmute::<i64, crawl_model::data::Background>(game.background_id) };
-        let real_name = match game.name.as_ref() {
+        let god = unsafe { std::mem::transmute::<i64, crawl_model::data::God>(game.god_id) };
+        let real_name = match game.name.as_str() {
             "brick" => "Richard",
             "Peen" => "Paul",
             "max"|"PunishedMax" => "Max",
@@ -93,12 +112,13 @@ impl From<crawl_model::db_model::Game> for FormattedGame {
             real_name: String::from(real_name),
             score: game.score,
             species: format!("{:?}", species),
-            background: format!("{:?}", background)
+            background: format!("{:?}", background),
+            god: format!("{:?}", god),
         }
     }
 }
 
-#[get("/<species>")]
+#[get("/<species>", rank = 1)]
 fn best_species(state: State<DatabasePool>, species: Species) -> Template {
     let connection = state.get().expect("Timeout waiting for pooled connection");
     let games = {
@@ -132,6 +152,23 @@ fn best_bg(state: State<DatabasePool>, bg: Background) -> Template {
     Template::render("index", &context)
 }
 
+#[get("/<god>", rank = 3)]
+fn best_god(state: State<DatabasePool>, god: God) -> Template {
+    let connection = state.get().expect("Timeout waiting for pooled connection");
+    let games = {
+        use crawl_model::db_schema::games::dsl::*;
+        games
+            .filter(god_id.eq(*god as i64))
+            .order(score.desc())
+            .limit(100)
+            .load::<crawl_model::db_model::Game>(&*connection)
+            .expect("Error loading games")
+    };
+    let formatted_games = games.into_iter().map(|x| x.into() ).collect();
+    let context = IndexContext { games: formatted_games };
+    Template::render("index", &context)
+}
+
 #[get("/<species>/<bg>")]
 fn best_combo(state: State<DatabasePool>, species: Species, bg: Background) -> Template {
     let connection = state.get().expect("Timeout waiting for pooled connection");
@@ -155,6 +192,25 @@ fn best_combo_inverted(state: State<DatabasePool>, species: Species, bg: Backgro
     best_combo(state, species, bg)
 }
 
+#[get("/<species>/<bg>/<god>")]
+fn best_combo_and_god(state: State<DatabasePool>, species: Species, bg: Background, god: God) -> Template {
+    let connection = state.get().expect("Timeout waiting for pooled connection");
+    let games = {
+        use crawl_model::db_schema::games::dsl::*;
+        games
+            .filter(species_id.eq(*species as i64))
+            .filter(background_id.eq(*bg as i64))
+            .filter(god_id.eq(*god as i64))
+            .order(score.desc())
+            .limit(100)
+            .load::<crawl_model::db_model::Game>(&*connection)
+            .expect("Error loading games")
+    };
+    let formatted_games = games.into_iter().map(|x| x.into() ).collect();
+    let context = IndexContext { games: formatted_games };
+    Template::render("index", &context)
+}
+
 #[get("/")]
 fn hiscores(state: State<DatabasePool>) -> Template {
     let connection = state.get().expect("Timeout waiting for pooled connection");
@@ -171,7 +227,7 @@ fn hiscores(state: State<DatabasePool>) -> Template {
     Template::render("index", &context)
 }
 
-#[get("/<file..>", rank = 3)]
+#[get("/<file..>", rank = 4)]
 fn files(file: PathBuf) -> Option<NamedFile> {
     NamedFile::open(Path::new("static/").join(file)).ok()
 }
@@ -184,7 +240,7 @@ fn main() {
     let manager = r2d2_diesel::ConnectionManager::<SqliteConnection>::new(database_url);
     let pool = r2d2::Pool::new(config, manager).expect("Failed to create pool.");
     rocket::ignite()
-        .mount("/", routes![hiscores, files, best_species, best_bg, best_combo, best_combo_inverted])
+        .mount("/", routes![hiscores, files, best_species, best_bg, best_combo, best_god, best_combo_inverted, best_combo_and_god])
         .manage(pool)
         .attach(Template::fairing())
         .launch();
