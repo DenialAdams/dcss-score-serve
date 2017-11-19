@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link rel="stylesheet" type="text/css" href="index.css">
+    <link rel="stylesheet" type="text/css" href="/index.css">
     <meta charset="utf-8" />
     <title></title>
   </head>
@@ -14,11 +14,11 @@
           <th>Species</th>
           <th>Background</th>
         </tr>
-        {{#each morgues}}
+        {{#each games }}
           <tr>
             <td><span title="{{ real_name }}">{{ name }}</span></td>
             <td>{{ score }}</td>
-            <td>{{ race }}</td>
+            <td>{{ species }}</td>
             <td>{{ background }}</td>
           </tr>
         {{/each}}

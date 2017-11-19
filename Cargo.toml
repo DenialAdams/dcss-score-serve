@@ -4,9 +4,10 @@ version = "0.1.0"
 authors = ["Richard McCormack <brick@brick.codes>"]
 
 [dependencies]
+crawl_model = { git = "https://github.com/DenialAdams/crawl_model" }
 rocket = "0.3.3"
 rocket_codegen = "0.3.3"
-diesel = { version = "0.16.0", features = ["sqlite"] }
+diesel = { git = "https://github.com/diesel-rs/diesel", features = ["sqlite", "large-tables"] }
 diesel_codegen = { version = "0.16.0", features = ["sqlite"] }
 dotenv = "0.10.1"
 serde = "1.0.15"
@@ -19,3 +20,5 @@ version = "0.3.3"
 default-features = false
 features = ["handlebars_templates", "json"]
 
+[patch.crates-io]
+diesel = { git = "https://github.com/diesel-rs/diesel" }
