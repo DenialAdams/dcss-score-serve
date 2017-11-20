@@ -169,7 +169,7 @@ fn best_god(state: State<DatabasePool>, god: God) -> Template {
     Template::render("index", &context)
 }
 
-#[get("/u/<player>")]
+#[get("/u/<player>", rank = 1)]
 fn best_player(state: State<DatabasePool>, player: String) -> Template {
     let connection = state.get().expect("Timeout waiting for pooled connection");
     let games = {
@@ -186,7 +186,7 @@ fn best_player(state: State<DatabasePool>, player: String) -> Template {
     Template::render("index", &context)
 }
 
-#[get("/<species>/<bg>")]
+#[get("/<species>/<bg>", rank = 2)]
 fn best_combo(state: State<DatabasePool>, species: Species, bg: Background) -> Template {
     let connection = state.get().expect("Timeout waiting for pooled connection");
     let games = {
@@ -204,7 +204,7 @@ fn best_combo(state: State<DatabasePool>, species: Species, bg: Background) -> T
     Template::render("index", &context)
 }
 
-#[get("/<bg>/<species>", rank = 2)]
+#[get("/<bg>/<species>", rank = 3)]
 fn best_combo_inverted(state: State<DatabasePool>, species: Species, bg: Background) -> Template {
     best_combo(state, species, bg)
 }
