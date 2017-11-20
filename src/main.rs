@@ -169,6 +169,23 @@ fn best_god(state: State<DatabasePool>, god: God) -> Template {
     Template::render("index", &context)
 }
 
+#[get("/u/<player>")]
+fn best_player(state: State<DatabasePool>, player: String) -> Template {
+    let connection = state.get().expect("Timeout waiting for pooled connection");
+    let games = {
+        use crawl_model::db_schema::games::dsl::*;
+        games
+            .filter(name.eq(player))
+            .order(score.desc())
+            .limit(100)
+            .load::<crawl_model::db_model::Game>(&*connection)
+            .expect("Error loading games")
+    };
+    let formatted_games = games.into_iter().map(|x| x.into() ).collect();
+    let context = IndexContext { games: formatted_games };
+    Template::render("index", &context)
+}
+
 #[get("/<species>/<bg>")]
 fn best_combo(state: State<DatabasePool>, species: Species, bg: Background) -> Template {
     let connection = state.get().expect("Timeout waiting for pooled connection");
@@ -240,7 +257,7 @@ fn main() {
     let manager = r2d2_diesel::ConnectionManager::<SqliteConnection>::new(database_url);
     let pool = r2d2::Pool::new(config, manager).expect("Failed to create pool.");
     rocket::ignite()
-        .mount("/", routes![hiscores, files, best_species, best_bg, best_combo, best_god, best_combo_inverted, best_combo_and_god])
+        .mount("/", routes![hiscores, files, best_species, best_bg, best_combo, best_god, best_combo_inverted, best_combo_and_god, best_player])
         .manage(pool)
         .attach(Template::fairing())
         .launch();
