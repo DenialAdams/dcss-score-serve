@@ -101,10 +101,14 @@ impl From<crawl_model::db_model::Game> for FormattedGame {
             "brick" => "Richard",
             "Peen" => "Paul",
             "max"|"PunishedMax" => "Max",
-            "daddy"|"fuckboy3000" => "James",
+            "daddy"|"fuckboy3000"|"peepeedarts" => "James",
             "sweetBro" => "Luca",
             "hellaJeff" => "Ben H",
             "Richard"|"BoonShekel" => "Ben S",
+            "bobjr93" => "Brennan",
+            "jish" => "Josh S",
+            "GrapeApe" => "Mason",
+            "Doomlord5" => "Dan",
             _ => "?"
         };
         FormattedGame {
