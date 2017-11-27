@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="/index.css">
+    <meta charset="utf-8" />
+    <title></title>
+  </head>
+  <body>
+    <div id="content">
+      <table>
+        <tr>
+          <th>Name</th>
+          <th>Score</th>
+          <th>Species</th>
+          <th>Background</th>
+          <th>God</th>
+        </tr>
+        {% for game in games %}
+        {% if game.victory %}
+          {% if game.runes == 15 %}
+            <tr class="victory15">
+          {% else %}
+            <tr class="victory">
+          {% endif %}
+        {% else %}
+          <tr>
+        {% endif %}
+            <td><span title="{{ game.real_name }}">{{ game.name }}</span></td>
+            <td>{{ game.score }}</td>
+            <td>{{ game.species }}</td>
+            <td>{{ game.background }}</td>
+            <td>{{ game.god }}</td>
+          </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </body>
+</html>

@@ -18,9 +18,29 @@ td {
   padding: 7px;
 }
 
-tr:nth-child(even) td { background: #F1F1F1; }
+tr:nth-child(even) td {
+  background: #F1F1F1;
+}
 
-tr:nth-child(odd) td { background: #FEFEFE; }
+tr:nth-child(odd) td {
+  background: #FEFEFE;
+}
+
+tr:nth-child(even).victory  td {
+  background: mediumseagreen;
+}
+
+tr:nth-child(odd).victory  td {
+  background: lightgreen;
+}
+
+tr:nth-child(even).victory15  td {
+  background: lightskyblue;
+}
+
+tr:nth-child(odd).victory15  td {
+  background: lightblue;
+}
 
 th {  
   background: #DFDFDF;

@@ -89,7 +89,9 @@ struct FormattedGame {
     pub score: i64,
     pub species: String,
     pub background: String,
-    pub god: String
+    pub god: String,
+    pub runes: i64,
+    pub victory: bool
 }
 
 impl From<crawl_model::db_model::Game> for FormattedGame {
@@ -111,6 +113,7 @@ impl From<crawl_model::db_model::Game> for FormattedGame {
             "Doomlord5" => "Dan",
             _ => "?"
         };
+        let victory = game.is_victory();
         FormattedGame {
             name: game.name,
             real_name: String::from(real_name),
@@ -118,6 +121,8 @@ impl From<crawl_model::db_model::Game> for FormattedGame {
             species: format!("{:?}", species),
             background: format!("{:?}", background),
             god: format!("{:?}", god),
+            runes: game.runes,
+            victory: victory
         }
     }
 }
