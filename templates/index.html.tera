@@ -14,6 +14,7 @@
           <th>Species</th>
           <th>Background</th>
           <th>God</th>
+          <th>XL</th>
         </tr>
         {% for game in games %}
         {% if game.victory %}
@@ -30,6 +31,7 @@
             <td>{{ game.species }}</td>
             <td>{{ game.background }}</td>
             <td>{{ game.god }}</td>
+            <td>{{ game.xl }}</td>
           </tr>
         {% endfor %}
       </table>

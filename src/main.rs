@@ -91,6 +91,7 @@ struct FormattedGame {
     pub background: String,
     pub god: String,
     pub runes: i64,
+    pub xl: i64,
     pub victory: bool
 }
 
@@ -122,6 +123,7 @@ impl From<crawl_model::db_model::Game> for FormattedGame {
             background: format!("{:?}", background),
             god: format!("{:?}", god),
             runes: game.runes,
+            xl: game.xl,
             victory: victory
         }
     }
