@@ -9,6 +9,7 @@
     <div id="content">
       <table>
         <tr>
+          <th>Rank</th>
           <th>Name</th>
           <th>Score</th>
           <th>Species</th>
@@ -17,22 +18,23 @@
           <th>XL</th>
         </tr>
         {% for game in games %}
-        {% if game.victory %}
-          {% if game.runes == 15 %}
-            <tr class="victory15">
+          {% if game.victory %}
+            {% if game.runes == 15 %}
+              <tr class="victory15">
+            {% else %}
+              <tr class="victory">
+            {% endif %}
           {% else %}
-            <tr class="victory">
+              <tr>
           {% endif %}
-        {% else %}
-          <tr>
-        {% endif %}
-            <td><span title="{{ game.real_name }}">{{ game.name }}</span></td>
-            <td>{{ game.score }}</td>
-            <td>{{ game.species }}</td>
-            <td>{{ game.background }}</td>
-            <td>{{ game.god }}</td>
-            <td>{{ game.xl }}</td>
-          </tr>
+                <td><span title="{{ game.real_name }}">{{ game.name }}</span></td>
+                <td>{{ loop.index }}</td>
+                <td>{{ game.score }}</td>
+                <td>{{ game.species }}</td>
+                <td>{{ game.background }}</td>
+                <td>{{ game.god }}</td>
+                <td>{{ game.xl }}</td>
+              </tr>
         {% endfor %}
       </table>
     </div>
