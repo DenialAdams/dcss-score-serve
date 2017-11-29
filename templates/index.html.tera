@@ -27,8 +27,8 @@
           {% else %}
               <tr>
           {% endif %}
-                <td><span title="{{ game.real_name }}">{{ game.name }}</span></td>
                 <td>{{ loop.index }}</td>
+                <td><span title="{{ game.real_name }}">{{ game.name }}</span></td>
                 <td>{{ game.score }}</td>
                 <td>{{ game.species }}</td>
                 <td>{{ game.background }}</td>
