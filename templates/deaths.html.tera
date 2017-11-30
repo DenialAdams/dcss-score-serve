@@ -11,7 +11,7 @@
         <tr>
           <th>Rank</th>
           <th>Frequency</th>
-          <th>Causue of Death</th>
+          <th>Cause of Death</th>
         </tr>
         {% for death in deaths %}
               <tr>
