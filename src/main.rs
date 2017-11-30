@@ -92,7 +92,18 @@ struct FormattedGame {
     pub god: String,
     pub runes: i64,
     pub xl: i64,
-    pub victory: bool
+    pub victory: bool,
+}
+
+#[derive(Serialize)]
+struct DeathsContext {
+    deaths: Vec<FormattedDeath>,
+}
+
+#[derive(Serialize)]
+struct FormattedDeath {
+    pub frequency: i64,
+    pub message: String,
 }
 
 impl From<crawl_model::db_model::Game> for FormattedGame {
@@ -255,6 +266,27 @@ fn hiscores(state: State<DatabasePool>) -> Template {
     Template::render("index", &context)
 }
 
+#[get("/deaths")]
+fn deaths(state: State<DatabasePool>) -> Template {
+    let connection = state.get().expect("Timeout waiting for pooled connection");
+    let deaths: Vec<(String, i64)> = {
+        use diesel::dsl::count;
+        use diesel::types::BigInt;
+        use diesel::dsl::sql;
+        use crawl_model::db_schema::games::dsl::*;
+        games
+            .select((tmsg, sql::<BigInt>("COUNT(games.tmsg)")))
+            .order(sql::<BigInt>("COUNT(games.tmsg)").desc())
+            .group_by(tmsg)
+            .limit(100)
+            .load::<_>(&*connection)
+            .expect("Error loading games")
+    };
+    let formatted_deaths = deaths.into_iter().map(|x| FormattedDeath { message: x.0, frequency: x.1 }).collect();
+    let context = DeathsContext { deaths: formatted_deaths };
+    Template::render("deaths", &context)
+}
+
 #[get("/<file..>", rank = 4)]
 fn files(file: PathBuf) -> Option<NamedFile> {
     NamedFile::open(Path::new("static/").join(file)).ok()
@@ -268,7 +300,7 @@ fn main() {
     let manager = r2d2_diesel::ConnectionManager::<SqliteConnection>::new(database_url);
     let pool = r2d2::Pool::new(config, manager).expect("Failed to create pool.");
     rocket::ignite()
-        .mount("/", routes![hiscores, files, best_species, best_bg, best_combo, best_god, best_combo_inverted, best_combo_and_god, best_player])
+        .mount("/", routes![hiscores, files, best_species, best_bg, best_combo, best_god, best_combo_inverted, best_combo_and_god, best_player, deaths])
         .manage(pool)
         .attach(Template::fairing())
         .launch();
