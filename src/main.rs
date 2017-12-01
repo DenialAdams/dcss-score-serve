@@ -295,10 +295,9 @@ fn files(file: PathBuf) -> Option<NamedFile> {
 fn main() {
     dotenv().ok();
 
-    let config = r2d2::Config::default();
     let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let manager = r2d2_diesel::ConnectionManager::<SqliteConnection>::new(database_url);
-    let pool = r2d2::Pool::new(config, manager).expect("Failed to create pool.");
+    let pool = r2d2::Pool::new(manager).expect("Failed to create pool.");
     rocket::ignite()
         .mount("/", routes![hiscores, files, best_species, best_bg, best_combo, best_god, best_combo_inverted, best_combo_and_god, best_player, deaths])
         .manage(pool)
