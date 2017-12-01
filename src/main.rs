@@ -113,7 +113,7 @@ impl From<crawl_model::db_model::Game> for FormattedGame {
         let god = unsafe { std::mem::transmute::<i64, crawl_model::data::God>(game.god_id) };
         let real_name = match game.name.as_str() {
             "brick" => "Richard",
-            "Peen" => "Paul",
+            "Peen"|"paul" => "Paul",
             "max"|"PunishedMax" => "Max",
             "daddy"|"fuckboy3000"|"peepeedarts" => "James",
             "sweetBro" => "Luca",
@@ -123,6 +123,7 @@ impl From<crawl_model::db_model::Game> for FormattedGame {
             "jish" => "Josh S",
             "GrapeApe" => "Mason",
             "Doomlord5" => "Dan",
+            "MikeyBoy" => "Mike",
             _ => "?"
         };
         let victory = game.is_victory();
