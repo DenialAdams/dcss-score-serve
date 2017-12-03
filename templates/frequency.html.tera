@@ -11,13 +11,13 @@
         <tr>
           <th>Rank</th>
           <th>Frequency</th>
-          <th>Cause of Death</th>
+          <th>{{ name }}</th>
         </tr>
-        {% for death in deaths %}
+        {% for item in items %}
               <tr>
                 <td>{{ loop.index }}</td>
-                <td>{{ death.frequency }}</td>
-                <td>{{ death.message }}</td>
+                <td>{{ item.frequency }}</td>
+                <td>{{ item.value }}</td>
               </tr>
         {% endfor %}
       </table>

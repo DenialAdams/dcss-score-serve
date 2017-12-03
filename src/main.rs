@@ -103,25 +103,15 @@ struct FormattedGame {
 }
 
 #[derive(Serialize)]
-struct DeathsContext {
-    deaths: Vec<FormattedDeath>,
+struct FreqContext {
+    name: String,
+    items: Vec<FormattedFreqItem>,
 }
 
 #[derive(Serialize)]
-struct FormattedDeath {
+struct FormattedFreqItem {
     pub frequency: i64,
-    pub message: String,
-}
-
-#[derive(Serialize)]
-struct SpeciesContext {
-    species: Vec<FormattedSpecies>,
-}
-
-#[derive(Serialize)]
-struct FormattedSpecies {
-    pub frequency: i64,
-    pub species: String,
+    pub value: String,
 }
 
 impl From<crawl_model::db_model::Game> for FormattedGame {
@@ -216,9 +206,9 @@ fn deaths(state: State<DatabasePool>) -> Template {
             .load::<_>(&*connection)
             .expect("Error loading games")
     };
-    let formatted_deaths = deaths.into_iter().map(|x| FormattedDeath { message: x.0, frequency: x.1 }).collect();
-    let context = DeathsContext { deaths: formatted_deaths };
-    Template::render("deaths", &context)
+    let formatted_items = deaths.into_iter().map(|x| FormattedFreqItem { value: x.0, frequency: x.1 }).collect();
+    let context = FreqContext { name: "Deaths".into(), items: formatted_items };
+    Template::render("frequency", &context)
 }
 
 #[get("/species")]
@@ -237,9 +227,51 @@ fn species(state: State<DatabasePool>) -> Template {
             .load::<_>(&*connection)
             .expect("Error loading games")
     };
-    let formatted_species = species.into_iter().map(|x| FormattedSpecies { species: format!("{:?}", unsafe { std::mem::transmute::<i64, crawl_model::data::Species>(x.0) } ), frequency: x.1 }).collect();
-    let context = SpeciesContext { species: formatted_species };
-    Template::render("species", &context)
+    let formatted_items = species.into_iter().map(|x| FormattedFreqItem { value: format!("{:?}", unsafe { std::mem::transmute::<i64, crawl_model::data::Species>(x.0) } ), frequency: x.1 }).collect();
+    let context = FreqContext { name: "Species".into(), items: formatted_items };
+    Template::render("frequency", &context)
+}
+
+#[get("/backgrounds")]
+fn backgrounds(state: State<DatabasePool>) -> Template {
+    let connection = state.get().expect("Timeout waiting for pooled connection");
+    let backgrounds: Vec<(i64, i64)> = {
+        use diesel::dsl::count;
+        use diesel::types::BigInt;
+        use diesel::dsl::sql;
+        use crawl_model::db_schema::games::dsl::*;
+        games
+            .select((background_id, sql::<BigInt>("COUNT(games.background_id)")))
+            .order(sql::<BigInt>("COUNT(games.background_id)").desc())
+            .group_by(background_id)
+            .limit(100)
+            .load::<_>(&*connection)
+            .expect("Error loading games")
+    };
+    let formatted_items = backgrounds.into_iter().map(|x| FormattedFreqItem { value: format!("{:?}", unsafe { std::mem::transmute::<i64, crawl_model::data::Background>(x.0) } ), frequency: x.1 }).collect();
+    let context = FreqContext { name: "Background".into(), items: formatted_items };
+    Template::render("frequency", &context)
+}
+
+#[get("/gods")]
+fn gods(state: State<DatabasePool>) -> Template {
+    let connection = state.get().expect("Timeout waiting for pooled connection");
+    let gods: Vec<(i64, i64)> = {
+        use diesel::dsl::count;
+        use diesel::types::BigInt;
+        use diesel::dsl::sql;
+        use crawl_model::db_schema::games::dsl::*;
+        games
+            .select((god_id, sql::<BigInt>("COUNT(games.god_id)")))
+            .order(sql::<BigInt>("COUNT(games.god_id)").desc())
+            .group_by(god_id)
+            .limit(100)
+            .load::<_>(&*connection)
+            .expect("Error loading games")
+    };
+    let formatted_items = gods.into_iter().map(|x| FormattedFreqItem { value: format!("{:?}", unsafe { std::mem::transmute::<i64, crawl_model::data::God>(x.0) } ), frequency: x.1 }).collect();
+    let context = FreqContext { name: "God".into(), items: formatted_items };
+    Template::render("frequency", &context)
 }
 
 #[get("/<file..>", rank = 4)]
@@ -254,7 +286,7 @@ fn main() {
     let manager = r2d2_diesel::ConnectionManager::<SqliteConnection>::new(database_url);
     let pool = r2d2::Pool::new(manager).expect("Failed to create pool.");
     rocket::ignite()
-        .mount("/", routes![hiscores, files, deaths, hi_query, species])
+        .mount("/", routes![hiscores, files, deaths, hi_query, species, backgrounds, gods])
         .manage(pool)
         .attach(Template::fairing())
         .launch();
