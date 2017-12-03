@@ -207,7 +207,7 @@ fn deaths(state: State<DatabasePool>) -> Template {
             .expect("Error loading games")
     };
     let formatted_items = deaths.into_iter().map(|x| FormattedFreqItem { value: x.0, frequency: x.1 }).collect();
-    let context = FreqContext { name: "Deaths".into(), items: formatted_items };
+    let context = FreqContext { name: "Cause of Death".into(), items: formatted_items };
     Template::render("frequency", &context)
 }
 
