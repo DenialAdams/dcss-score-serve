@@ -121,7 +121,8 @@ struct UserContext {
     pub fav_god: String,
     pub wins: i64,
     pub games: i64,
-    pub winrate: String
+    pub winrate: String,
+    pub name: String
 }
 
 impl From<crawl_model::db_model::Game> for FormattedGame {
@@ -287,7 +288,8 @@ fn user(state: State<DatabasePool>, name_param: String) -> Template {
         fav_god: fav_god,
         games: num_games,
         wins: num_wins,
-        winrate: format!("{:.2}", (num_wins as f64 / num_games as f64) * 100.0)
+        winrate: format!("{:.2}", (num_wins as f64 / num_games as f64) * 100.0),
+        name: name_param
     };
     Template::render("user", &context)
 }

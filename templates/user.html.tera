@@ -14,7 +14,7 @@
       <h1>Favorite God</h1>
       {{ fav_god }}
       <h1>Games</h1>
-      {{ wins }} wins, {{ games }} games ({{ winrate }}%)
+      {{ wins }} wins, {{ games }} <a href="/?name={{ name }}">games</a> ({{ winrate }}%)
     </div>
   </body>
 </html>
