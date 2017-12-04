@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="/index.css">
+    <meta charset="utf-8" />
+    <title></title>
+  </head>
+  <body>
+    <div id="content">
+      <h1>Favorite Species</h1>
+      {{ fav_species }}
+      <h1>Favorite Background</h1>
+      {{ fav_background }}
+      <h1>Favorite God</h1>
+      {{ fav_god }}
+      <h1>Games</h1>
+      {{ wins }} win, {{ games }} games ({{ winrate }}%)
+    </div>
+  </body>
+</html>

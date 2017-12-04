@@ -14,11 +14,11 @@
           <th>{{ name }}</th>
         </tr>
         {% for item in items %}
-              <tr>
-                <td>{{ loop.index }}</td>
-                <td>{{ item.frequency }}</td>
-                <td>{{ item.value }}</td>
-              </tr>
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td>{{ item.frequency }}</td>
+              <td>{{ item.value }}</td>
+            </tr>
         {% endfor %}
       </table>
     </div>

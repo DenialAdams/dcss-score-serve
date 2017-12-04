@@ -114,6 +114,16 @@ struct FormattedFreqItem {
     pub value: String,
 }
 
+#[derive(Serialize)]
+struct UserContext {
+    pub fav_species: String,
+    pub fav_background: String,
+    pub fav_god: String,
+    pub wins: i64,
+    pub games: i64,
+    pub winrate: String
+}
+
 impl From<crawl_model::db_model::Game> for FormattedGame {
     fn from(game: crawl_model::db_model::Game) -> FormattedGame {
         let species = unsafe { std::mem::transmute::<i64, crawl_model::data::Species>(game.species_id) };
@@ -188,6 +198,89 @@ fn hi_query(state: State<DatabasePool>, game_query: GameQuery) -> Template {
     let formatted_games = games.into_iter().map(|x| x.into() ).collect();
     let context = IndexContext { games: formatted_games };
     Template::render("index", &context)
+}
+
+#[get("/u/<name_param>")]
+fn user(state: State<DatabasePool>, name_param: String) -> Template {
+    let connection = state.get().expect("Timeout waiting for pooled connection");
+    let num_games: i64 = {
+        use crawl_model::db_schema::games::dsl::*;
+        games
+            .filter(name.eq(&name_param))
+            .count()
+            .get_result(&*connection)
+            .expect("Error loading games")
+    };
+    let num_wins: i64 = {
+        use crawl_model::db_schema::games::dsl::*;
+        games
+            .filter(name.eq(&name_param))
+            .filter(tmsg.eq("escaped with the Orb"))
+            .count()
+            .get_result(&*connection)
+            .expect("Error loading games")
+    };
+    let fav_bg = {
+        let fav_bg_id: Option<i64> = {
+            use crawl_model::db_schema::games::dsl::*;
+            games
+                .filter(name.eq(&name_param))
+                .select(background_id)
+                .first(&*connection)
+                .optional()
+                .expect("Error loading games")
+        };
+        if let Some(bg_id) = fav_bg_id {
+            let background = unsafe { std::mem::transmute::<i64, crawl_model::data::Background>(bg_id) };
+            format!("{:?}", background)
+        } else {
+            "N/A".into()
+        }
+    };
+    let fav_species = {
+        let fav_species_id: Option<i64> = {
+            use crawl_model::db_schema::games::dsl::*;
+            games
+                .filter(name.eq(&name_param))
+                .select(species_id)
+                .first(&*connection)
+                .optional()
+                .expect("Error loading games")
+        };
+        if let Some(species_id) = fav_species_id {
+            let species = unsafe { std::mem::transmute::<i64, crawl_model::data::Species>(species_id) };
+            format!("{:?}", species)
+        } else {
+            "N/A".into()
+        }
+    };
+    let fav_god = {
+        let fav_god_id: Option<i64> = {
+            use crawl_model::db_schema::games::dsl::*;
+            games
+                .filter(name.eq(&name_param))
+                .filter(god_id.ne(crawl_model::data::God::Atheist as i64))
+                .select(god_id)
+                .first(&*connection)
+                .optional()
+                .expect("Error loading games")
+        };
+        if let Some(god_id) = fav_god_id {
+            let god = unsafe { std::mem::transmute::<i64, crawl_model::data::God>(god_id) };
+            format!("{:?}", god)
+        } else {
+            "N/A".into()
+        }
+    };
+    let context = UserContext {
+        fav_background: fav_bg,
+        fav_species: fav_species,
+        fav_god: fav_god,
+        games: num_games,
+        wins: num_wins,
+        winrate: format!("{:.2}", (num_wins as f64 / num_games as f64) * 100.0)
+    };
+    Template::render("user", &context)
 }
 
 #[get("/deaths")]
@@ -286,7 +379,7 @@ fn main() {
     let manager = r2d2_diesel::ConnectionManager::<SqliteConnection>::new(database_url);
     let pool = r2d2::Pool::new(manager).expect("Failed to create pool.");
     rocket::ignite()
-        .mount("/", routes![hiscores, files, deaths, hi_query, species, backgrounds, gods])
+        .mount("/", routes![hiscores, files, deaths, hi_query, species, backgrounds, gods, user])
         .manage(pool)
         .attach(Template::fairing())
         .launch();
