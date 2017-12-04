@@ -289,6 +289,9 @@ fn user(state: State<DatabasePool>, name_param: String) -> Template {
             use diesel::dsl::count;
             games
                 .filter(name.eq(&name_param))
+                .filter(tmsg.ne("got out of the dungeon alive"))
+                .filter(tmsg.ne("quit the game"))
+                .filter(tmsg.ne("safely got out of the dungeon"))
                 .order(count(tmsg).desc())
                 .select(tmsg)
                 .group_by(tmsg)
