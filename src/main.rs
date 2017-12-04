@@ -223,8 +223,10 @@ fn user(state: State<DatabasePool>, name_param: String) -> Template {
     let fav_bg = {
         let fav_bg_id: Option<i64> = {
             use crawl_model::db_schema::games::dsl::*;
+            use diesel::dsl::count;
             games
                 .filter(name.eq(&name_param))
+                .order(count(background_id))
                 .select(background_id)
                 .first(&*connection)
                 .optional()
@@ -240,8 +242,10 @@ fn user(state: State<DatabasePool>, name_param: String) -> Template {
     let fav_species = {
         let fav_species_id: Option<i64> = {
             use crawl_model::db_schema::games::dsl::*;
+            use diesel::dsl::count;
             games
                 .filter(name.eq(&name_param))
+                .order(count(species_id))
                 .select(species_id)
                 .first(&*connection)
                 .optional()
@@ -257,9 +261,11 @@ fn user(state: State<DatabasePool>, name_param: String) -> Template {
     let fav_god = {
         let fav_god_id: Option<i64> = {
             use crawl_model::db_schema::games::dsl::*;
+            use diesel::dsl::count;
             games
                 .filter(name.eq(&name_param))
                 .filter(god_id.ne(crawl_model::data::God::Atheist as i64))
+                .order(count(god_id))
                 .select(god_id)
                 .first(&*connection)
                 .optional()
