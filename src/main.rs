@@ -226,8 +226,9 @@ fn user(state: State<DatabasePool>, name_param: String) -> Template {
             use diesel::dsl::count;
             games
                 .filter(name.eq(&name_param))
-                .order(count(background_id))
+                .order(count(background_id).desc())
                 .select(background_id)
+                .group_by(species_id)
                 .first(&*connection)
                 .optional()
                 .expect("Error loading games")
@@ -245,8 +246,9 @@ fn user(state: State<DatabasePool>, name_param: String) -> Template {
             use diesel::dsl::count;
             games
                 .filter(name.eq(&name_param))
-                .order(count(species_id))
+                .order(count(species_id).desc())
                 .select(species_id)
+                .group_by(species_id)
                 .first(&*connection)
                 .optional()
                 .expect("Error loading games")
@@ -265,8 +267,9 @@ fn user(state: State<DatabasePool>, name_param: String) -> Template {
             games
                 .filter(name.eq(&name_param))
                 .filter(god_id.ne(crawl_model::data::God::Atheist as i64))
-                .order(count(god_id))
+                .order(count(god_id).desc())
                 .select(god_id)
+                .group_by(god_id)
                 .first(&*connection)
                 .optional()
                 .expect("Error loading games")
