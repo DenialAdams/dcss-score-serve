@@ -228,7 +228,7 @@ fn user(state: State<DatabasePool>, name_param: String) -> Template {
                 .filter(name.eq(&name_param))
                 .order(count(background_id).desc())
                 .select(background_id)
-                .group_by(species_id)
+                .group_by(background_id)
                 .first(&*connection)
                 .optional()
                 .expect("Error loading games")
