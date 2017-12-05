@@ -104,8 +104,8 @@ struct FormattedGame {
 }
 
 #[derive(Serialize)]
-struct FreqContext {
-    name: String,
+struct FreqContext<'a> {
+    name: &'a str,
     items: Vec<FormattedFreqItem>,
 }
 
@@ -145,6 +145,7 @@ impl From<crawl_model::db_model::Game> for FormattedGame {
             "GrapeApe" => "Mason",
             "Doomlord5" => "Dan",
             "MikeyBoy" => "Mike",
+            "BigSweetPP" => "Seth",
             _ => "?"
         };
         let victory = game.is_victory();
@@ -339,7 +340,7 @@ fn deaths(state: State<DatabasePool>) -> Template {
             .expect("Error loading games")
     };
     let formatted_items = deaths.into_iter().map(|x| FormattedFreqItem { value: x.0, frequency: x.1 }).collect();
-    let context = FreqContext { name: "Cause of Death".into(), items: formatted_items };
+    let context = FreqContext { name: "Cause of Death", items: formatted_items };
     Template::render("frequency", &context)
 }
 
@@ -360,7 +361,7 @@ fn species(state: State<DatabasePool>) -> Template {
             .expect("Error loading games")
     };
     let formatted_items = species.into_iter().map(|x| FormattedFreqItem { value: format!("{:?}", unsafe { std::mem::transmute::<i64, crawl_model::data::Species>(x.0) } ), frequency: x.1 }).collect();
-    let context = FreqContext { name: "Species".into(), items: formatted_items };
+    let context = FreqContext { name: "Species", items: formatted_items };
     Template::render("frequency", &context)
 }
 
@@ -381,7 +382,7 @@ fn backgrounds(state: State<DatabasePool>) -> Template {
             .expect("Error loading games")
     };
     let formatted_items = backgrounds.into_iter().map(|x| FormattedFreqItem { value: format!("{:?}", unsafe { std::mem::transmute::<i64, crawl_model::data::Background>(x.0) } ), frequency: x.1 }).collect();
-    let context = FreqContext { name: "Background".into(), items: formatted_items };
+    let context = FreqContext { name: "Background", items: formatted_items };
     Template::render("frequency", &context)
 }
 
@@ -402,7 +403,7 @@ fn gods(state: State<DatabasePool>) -> Template {
             .expect("Error loading games")
     };
     let formatted_items = gods.into_iter().map(|x| FormattedFreqItem { value: format!("{:?}", unsafe { std::mem::transmute::<i64, crawl_model::data::God>(x.0) } ), frequency: x.1 }).collect();
-    let context = FreqContext { name: "God".into(), items: formatted_items };
+    let context = FreqContext { name: "God", items: formatted_items };
     Template::render("frequency", &context)
 }
 
