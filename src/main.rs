@@ -81,7 +81,8 @@ struct GameQuery {
     god: Option<God>,
     background: Option<Background>,
     species: Option<Species>,
-    name: Option<String>
+    name: Option<String>,
+    victory: bool
 }
 
 #[derive(Serialize)]
@@ -194,6 +195,9 @@ fn hi_query(state: State<DatabasePool>, game_query: GameQuery) -> Template {
         }
         if let Some(qname) = game_query.name {
             expression = expression.filter(name.eq(qname))
+        }
+        if game_query.victory {
+            expression = expression.filter(tmsg.eq("escaped with the Orb"))
         }
         expression.load::<crawl_model::db_model::Game>(&*connection).expect("Error loading games")
     };
