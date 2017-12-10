@@ -15,6 +15,8 @@
       {{ fav_god }}
       <h1>Nemesis</h1>
       {{ nemesis }}
+      <h1>Favorite Place to Die</h1>
+      {{ death_spot }}
       <h1>Games</h1>
       {{ wins }} <a href="/?name={{ name }}&victory=true">wins</a>, {{ games }} <a href="/?name={{ name }}">games</a> ({{ winrate }}%)
     </div>

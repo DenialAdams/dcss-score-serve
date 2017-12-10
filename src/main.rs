@@ -124,7 +124,8 @@ struct UserContext {
     pub games: i64,
     pub winrate: String,
     pub name: String,
-    pub nemesis: String
+    pub nemesis: String,
+    pub death_spot: String
 }
 
 impl From<crawl_model::db_model::Game> for FormattedGame {
@@ -310,6 +311,25 @@ fn user(state: State<DatabasePool>, name_param: String) -> Template {
             "N/A".into()
         }
     };
+    let fav_death_spot = {
+        let fav_death_spot: Option<String> = {
+            use crawl_model::db_schema::games::dsl::*;
+            use diesel::dsl::count;
+            games
+                .filter(name.eq(&name_param))
+                .order(count(place).desc())
+                .select(place)
+                .group_by(place)
+                .first(&*connection)
+                .optional()
+                .expect("Error loading games")
+        };
+        if let Some(death_spot) = fav_death_spot {
+            death_spot
+        } else {
+            "N/A".into()
+        }
+    };
     let context = UserContext {
         fav_background: fav_bg,
         fav_species: fav_species,
@@ -318,7 +338,8 @@ fn user(state: State<DatabasePool>, name_param: String) -> Template {
         wins: num_wins,
         winrate: format!("{:.2}", (num_wins as f64 / num_games as f64) * 100.0),
         name: name_param,
-        nemesis: fav_nemesis
+        nemesis: fav_nemesis,
+        death_spot: fav_death_spot
     };
     Template::render("user", &context)
 }
