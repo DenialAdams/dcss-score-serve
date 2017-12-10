@@ -344,6 +344,27 @@ fn deaths(state: State<DatabasePool>) -> Template {
     Template::render("frequency", &context)
 }
 
+#[get("/places")]
+fn places(state: State<DatabasePool>) -> Template {
+    let connection = state.get().expect("Timeout waiting for pooled connection");
+    let places: Vec<(String, i64)> = {
+        use diesel::dsl::count;
+        use diesel::types::BigInt;
+        use diesel::dsl::sql;
+        use crawl_model::db_schema::games::dsl::*;
+        games
+            .select((place, sql::<BigInt>("COUNT(games.place)")))
+            .order(sql::<BigInt>("COUNT(games.place)").desc())
+            .group_by(place)
+            .limit(100)
+            .load::<_>(&*connection)
+            .expect("Error loading games")
+    };
+    let formatted_items = places.into_iter().map(|x| FormattedFreqItem { value: x.0, frequency: x.1 }).collect();
+    let context = FreqContext { name: "Final Location", items: formatted_items };
+    Template::render("frequency", &context)
+}
+
 #[get("/species")]
 fn species(state: State<DatabasePool>) -> Template {
     let connection = state.get().expect("Timeout waiting for pooled connection");
