@@ -440,7 +440,7 @@ fn main() {
     let manager = r2d2_diesel::ConnectionManager::<SqliteConnection>::new(database_url);
     let pool = r2d2::Pool::new(manager).expect("Failed to create pool.");
     rocket::ignite()
-        .mount("/", routes![hiscores, files, deaths, hi_query, species, backgrounds, gods, user])
+        .mount("/", routes![hiscores, files, deaths, hi_query, species, backgrounds, gods, user, places])
         .manage(pool)
         .attach(Template::fairing())
         .launch();
