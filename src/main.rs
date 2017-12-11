@@ -82,6 +82,7 @@ struct GameQuery {
     background: Option<Background>,
     species: Option<Species>,
     name: Option<String>,
+    runes: Option<i64>,
     victory: bool
 }
 
@@ -197,6 +198,9 @@ fn hi_query(state: State<DatabasePool>, game_query: GameQuery) -> Template {
         }
         if let Some(qname) = game_query.name {
             expression = expression.filter(name.eq(qname))
+        }
+        if let Some(nrunes) = game_query.runes {
+            expression = expression.filter(runes.eq(nrunes))
         }
         if game_query.victory {
             expression = expression.filter(tmsg.eq("escaped with the Orb"))
