@@ -77,6 +77,7 @@ impl<'a> rocket::request::FromFormValue<'a> for God {
 
 enum SortOption {
    Duration,
+   New,
    Score
 }
 
@@ -86,6 +87,7 @@ impl<'a> rocket::request::FromFormValue<'a> for SortOption {
    fn from_form_value(param: &'a rocket::http::RawStr) -> Result<SortOption, ()> {
       match param.percent_decode_lossy().to_ascii_lowercase().as_ref() {
          "duration" => Ok(SortOption::Duration),
+         "new" => Ok(SortOption::New),
          "score" => Ok(SortOption::Score),
          _ => Err(()),
       }
@@ -236,10 +238,13 @@ fn hi_query(state: State<DatabasePool>, game_query: GameQuery) -> Template {
       let mut expression = games.into_boxed();
       match game_query.sort_by {
          SortOption::Duration => {
-            expression = expression.order(dur.asc())
+            expression = expression.order(dur.asc());
+         }
+         SortOption::New => {
+            expression = expression.order(start.desc());
          }
          SortOption::Score => {
-            expression = expression.order(score.desc())
+            expression = expression.order(score.desc());
          }
       }
       if let Some(god) = game_query.god {
