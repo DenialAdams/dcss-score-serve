@@ -137,10 +137,10 @@ impl From<crawl_model::db_model::Game> for FormattedGame {
         let real_name = match game.name.as_str() {
             "brick" => "Richard",
             "Peen"|"paul" => "Paul",
-            "max"|"PunishedMax" => "Max",
+            "max"|"PunishedMax"|"OgreStreak" => "Max",
             "daddy"|"fuckboy3000"|"peepeedarts" => "James",
             "sweetBro" => "Luca",
-            "hellaJeff" => "Ben H",
+            "hellaJeff"|"bigBootyJudy" => "Ben H",
             "Richard"|"BoonShekel"|"THEBLIMP" => "Ben S",
             "bobjr93" => "Brennan",
             "jish" => "Josh S",
@@ -148,6 +148,7 @@ impl From<crawl_model::db_model::Game> for FormattedGame {
             "Doomlord5" => "Dan",
             "MikeyBoy" => "Mike",
             "BigSweetPP" => "Seth",
+            "Idyll" => "Emma",
             _ => "?"
         };
         let victory = game.is_victory();
