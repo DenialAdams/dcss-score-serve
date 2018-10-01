@@ -355,7 +355,6 @@ fn deaths(state: State<DatabasePool>) -> Template {
    let connection = state.get().expect("Timeout waiting for pooled connection");
    let deaths: Vec<(String, i64)> = {
       use crawl_model::db_schema::games::dsl::*;
-      use diesel::dsl::count;
       use diesel::dsl::sql;
       use diesel::types::BigInt;
       games
@@ -384,7 +383,6 @@ fn places(state: State<DatabasePool>) -> Template {
    let connection = state.get().expect("Timeout waiting for pooled connection");
    let places: Vec<(String, i64)> = {
       use crawl_model::db_schema::games::dsl::*;
-      use diesel::dsl::count;
       use diesel::dsl::sql;
       use diesel::types::BigInt;
       games
@@ -413,7 +411,6 @@ fn species(state: State<DatabasePool>) -> Template {
    let connection = state.get().expect("Timeout waiting for pooled connection");
    let species: Vec<(i64, i64)> = {
       use crawl_model::db_schema::games::dsl::*;
-      use diesel::dsl::count;
       use diesel::dsl::sql;
       use diesel::types::BigInt;
       games
@@ -444,7 +441,6 @@ fn backgrounds(state: State<DatabasePool>) -> Template {
    let connection = state.get().expect("Timeout waiting for pooled connection");
    let backgrounds: Vec<(i64, i64)> = {
       use crawl_model::db_schema::games::dsl::*;
-      use diesel::dsl::count;
       use diesel::dsl::sql;
       use diesel::types::BigInt;
       games
@@ -475,7 +471,6 @@ fn gods(state: State<DatabasePool>) -> Template {
    let connection = state.get().expect("Timeout waiting for pooled connection");
    let gods: Vec<(i64, i64)> = {
       use crawl_model::db_schema::games::dsl::*;
-      use diesel::dsl::count;
       use diesel::dsl::sql;
       use diesel::types::BigInt;
       games
