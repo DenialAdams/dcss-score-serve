@@ -82,7 +82,20 @@ struct GameQuery {
    species: Option<Species>,
    name: Option<String>,
    runes: Option<i64>,
-   victory: bool,
+   victory: Option<bool>,
+}
+
+impl Default for GameQuery {
+   fn default() -> GameQuery {
+      GameQuery {
+         god: None,
+         background: None,
+         species: None,
+         name: None,
+         runes: None,
+         victory: None,
+      }
+   }
 }
 
 #[derive(Serialize)]
@@ -167,18 +180,7 @@ impl From<crawl_model::db_model::Game> for FormattedGame {
 
 #[get("/")]
 fn hiscores(state: State<DatabasePool>) -> Template {
-   let connection = state.get().expect("Timeout waiting for pooled connection");
-   let games = {
-      use crawl_model::db_schema::games::dsl::*;
-      games
-         .order(score.desc())
-         .limit(100)
-         .load::<crawl_model::db_model::Game>(&*connection)
-         .expect("Error loading games")
-   };
-   let formatted_games = games.into_iter().map(|x| x.into()).collect();
-   let context = IndexContext { games: formatted_games };
-   Template::render("index", &context)
+   hi_query(state, GameQuery::default())
 }
 
 #[get("/?<game_query>")]
@@ -197,13 +199,16 @@ fn hi_query(state: State<DatabasePool>, game_query: GameQuery) -> Template {
          expression = expression.filter(species_id.eq(*species as i64));
       }
       if let Some(qname) = game_query.name {
-         expression = expression.filter(name.eq(qname))
+         expression = expression.filter(name.eq(qname));
       }
       if let Some(nrunes) = game_query.runes {
-         expression = expression.filter(runes.eq(nrunes))
+         expression = expression.filter(runes.eq(nrunes));
       }
-      if game_query.victory {
-         expression = expression.filter(tmsg.eq("escaped with the Orb"))
+      if let Some(victory) = game_query.victory {
+         expression = match victory {
+            true => expression.filter(tmsg.eq("escaped with the Orb")),
+            false => expression.filter(tmsg.ne("escaped with the Orb")),
+         };
       }
       expression
          .load::<crawl_model::db_model::Game>(&*connection)
