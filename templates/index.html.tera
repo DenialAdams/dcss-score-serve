@@ -17,6 +17,7 @@
           <th>God</th>
           <th>XL</th>
           <th>Runes</th>
+          <th>Duration (realtime)</th>
         </tr>
         {% for game in games %}
           {% if game.victory %}
@@ -36,6 +37,7 @@
                 <td>{{ game.god }}</td>
                 <td>{{ game.xl }}</td>
                 <td>{{ game.runes }}</td>
+                <td>{{ game.duration }}</td>
               </tr>
         {% endfor %}
       </table>

@@ -75,6 +75,27 @@ impl<'a> rocket::request::FromFormValue<'a> for God {
    }
 }
 
+enum SortOption {
+   Duration,
+   Score
+}
+
+impl<'a> rocket::request::FromFormValue<'a> for SortOption {
+   type Error = ();
+
+   fn from_form_value(param: &'a rocket::http::RawStr) -> Result<SortOption, ()> {
+      match param.percent_decode_lossy().to_ascii_lowercase().as_ref() {
+         "duration" => Ok(SortOption::Duration),
+         "score" => Ok(SortOption::Score),
+         _ => Err(()),
+      }
+   }
+
+   fn default() -> Option<SortOption> {
+      Some(SortOption::Score)
+   }
+}
+
 #[derive(FromForm)]
 struct GameQuery {
    god: Option<God>,
@@ -83,6 +104,7 @@ struct GameQuery {
    name: Option<String>,
    runes: Option<i64>,
    victory: Option<bool>,
+   sort_by: SortOption,
 }
 
 impl Default for GameQuery {
@@ -94,6 +116,7 @@ impl Default for GameQuery {
          name: None,
          runes: None,
          victory: None,
+         sort_by: SortOption::Score,
       }
    }
 }
@@ -114,6 +137,7 @@ struct FormattedGame {
    pub runes: i64,
    pub xl: i64,
    pub victory: bool,
+   pub duration: String,
 }
 
 #[derive(Serialize)]
@@ -139,6 +163,26 @@ struct UserContext {
    pub name: String,
    pub nemesis: String,
    pub death_spot: String,
+}
+
+fn seconds_to_humantime(mut seconds: i64) -> String {
+   let mut hours = 0;
+   let mut minutes = 0;
+   while seconds >= 3600 {
+      seconds -= 3600;
+      hours += 1;
+   }
+   while seconds >= 60 {
+      seconds -= 60;
+      minutes += 1;
+   }
+   if hours > 0 {
+      format!("{} hours, {} minutes, {} seconds", hours, minutes, seconds)
+   } else if minutes > 0 {
+      format!("{} minutes, {} seconds", minutes, seconds)
+   } else {
+      format!("{} seconds", seconds)
+   }
 }
 
 impl From<crawl_model::db_model::Game> for FormattedGame {
@@ -174,6 +218,7 @@ impl From<crawl_model::db_model::Game> for FormattedGame {
          runes: game.runes,
          xl: game.xl,
          victory: victory,
+         duration: seconds_to_humantime(game.dur),
       }
    }
 }
@@ -188,7 +233,15 @@ fn hi_query(state: State<DatabasePool>, game_query: GameQuery) -> Template {
    let connection = state.get().expect("Timeout waiting for pooled connection");
    let games = {
       use crawl_model::db_schema::games::dsl::*;
-      let mut expression = games.into_boxed().order(score.desc()).limit(100);
+      let mut expression = games.into_boxed();
+      match game_query.sort_by {
+         SortOption::Duration => {
+            expression = expression.order(dur.asc())
+         }
+         SortOption::Score => {
+            expression = expression.order(score.desc())
+         }
+      }
       if let Some(god) = game_query.god {
          expression = expression.filter(god_id.eq(*god as i64));
       }
@@ -211,6 +264,7 @@ fn hi_query(state: State<DatabasePool>, game_query: GameQuery) -> Template {
          };
       }
       expression
+         .limit(100)
          .load::<crawl_model::db_model::Game>(&*connection)
          .expect("Error loading games")
    };
