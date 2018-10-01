@@ -361,7 +361,7 @@ fn deaths(state: State<DatabasePool>) -> Template {
    let deaths: Vec<(String, i64)> = {
       use crawl_model::db_schema::games::dsl::*;
       use diesel::dsl::sql;
-      use diesel::types::BigInt;
+      use diesel::sql_types::BigInt;
       games
          .select((tmsg, sql::<BigInt>("COUNT(games.tmsg)")))
          .order(sql::<BigInt>("COUNT(games.tmsg)").desc())
@@ -389,7 +389,7 @@ fn places(state: State<DatabasePool>) -> Template {
    let places: Vec<(String, i64)> = {
       use crawl_model::db_schema::games::dsl::*;
       use diesel::dsl::sql;
-      use diesel::types::BigInt;
+      use diesel::sql_types::BigInt;
       games
          .select((place, sql::<BigInt>("COUNT(games.place)")))
          .order(sql::<BigInt>("COUNT(games.place)").desc())
@@ -417,7 +417,7 @@ fn species(state: State<DatabasePool>) -> Template {
    let species: Vec<(i64, i64)> = {
       use crawl_model::db_schema::games::dsl::*;
       use diesel::dsl::sql;
-      use diesel::types::BigInt;
+      use diesel::sql_types::BigInt;
       games
          .select((species_id, sql::<BigInt>("COUNT(games.species_id)")))
          .order(sql::<BigInt>("COUNT(games.species_id)").desc())
@@ -447,7 +447,7 @@ fn backgrounds(state: State<DatabasePool>) -> Template {
    let backgrounds: Vec<(i64, i64)> = {
       use crawl_model::db_schema::games::dsl::*;
       use diesel::dsl::sql;
-      use diesel::types::BigInt;
+      use diesel::sql_types::BigInt;
       games
          .select((background_id, sql::<BigInt>("COUNT(games.background_id)")))
          .order(sql::<BigInt>("COUNT(games.background_id)").desc())
@@ -477,7 +477,7 @@ fn gods(state: State<DatabasePool>) -> Template {
    let gods: Vec<(i64, i64)> = {
       use crawl_model::db_schema::games::dsl::*;
       use diesel::dsl::sql;
-      use diesel::types::BigInt;
+      use diesel::sql_types::BigInt;
       games
          .select((god_id, sql::<BigInt>("COUNT(games.god_id)")))
          .order(sql::<BigInt>("COUNT(games.god_id)").desc())
