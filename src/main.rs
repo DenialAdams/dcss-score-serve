@@ -144,7 +144,7 @@ impl From<crawl_model::db_model::Game> for FormattedGame {
             "Richard"|"BoonShekel"|"THEBLIMP" => "Ben S",
             "bobjr93" => "Brennan",
             "jish" => "Josh S",
-            "GrapeApe" => "Mason",
+            "GrapeApe" => "Mason C.",
             "Doomlord5" => "Dan",
             "MikeyBoy" => "Mike",
             "BigSweetPP" => "Seth",
