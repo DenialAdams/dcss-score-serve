@@ -78,7 +78,8 @@ impl<'a> rocket::request::FromFormValue<'a> for God {
 enum SortOption {
    Duration,
    New,
-   Score
+   Score,
+   Turns
 }
 
 impl<'a> rocket::request::FromFormValue<'a> for SortOption {
@@ -89,6 +90,7 @@ impl<'a> rocket::request::FromFormValue<'a> for SortOption {
          "duration" => Ok(SortOption::Duration),
          "new" => Ok(SortOption::New),
          "score" => Ok(SortOption::Score),
+         "turns" => Ok(SortOption::Turns),
          _ => Err(()),
       }
    }
@@ -141,6 +143,7 @@ struct FormattedGame {
    pub xl: i64,
    pub victory: bool,
    pub duration: String,
+   pub turns: i64,
 }
 
 #[derive(Serialize)]
@@ -222,6 +225,7 @@ impl From<crawl_model::db_model::Game> for FormattedGame {
          xl: game.xl,
          victory: victory,
          duration: seconds_to_humantime(game.dur),
+         turns: game.turn,
       }
    }
 }
@@ -246,6 +250,9 @@ fn hi_query(state: State<DatabasePool>, game_query: GameQuery) -> Template {
          }
          SortOption::Score => {
             expression = expression.order(score.desc());
+         }
+         SortOption::Turns => {
+            expression = expression.order(turn.asc());
          }
       }
       if let Some(god) = game_query.god {

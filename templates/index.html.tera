@@ -17,6 +17,7 @@
           <th>God</th>
           <th>XL</th>
           <th>Runes</th>
+          <th>Turns</th>
           <th>Duration (realtime)</th>
         </tr>
         {% for game in games %}
@@ -37,6 +38,7 @@
                 <td>{{ game.god }}</td>
                 <td>{{ game.xl }}</td>
                 <td>{{ game.runes }}</td>
+                <td>{{ game.turns }}</td>
                 <td>{{ game.duration }}</td>
               </tr>
         {% endfor %}
