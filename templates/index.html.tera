@@ -41,7 +41,7 @@
               </tr>
         {% endfor %}
       </table>
-      From <strong>{{ count }}</strong> games.
+      Querying <strong>{{ count }}</strong> games.
     </div>
   </body>
 </html>
