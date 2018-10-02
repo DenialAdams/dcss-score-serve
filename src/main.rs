@@ -126,6 +126,7 @@ impl Default for GameQuery {
 #[derive(Serialize)]
 struct IndexContext {
    games: Vec<FormattedGame>,
+   count: i64,
 }
 
 #[derive(Serialize)]
@@ -274,7 +275,11 @@ fn hi_query(state: State<DatabasePool>, game_query: GameQuery) -> Template {
          .expect("Error loading games")
    };
    let formatted_games = games.into_iter().map(|x| x.into()).collect();
-   let context = IndexContext { games: formatted_games };
+   let games_count: i64 = {
+      use crawl_model::db_schema::games::dsl::*;
+      games.count().get_result(&*connection).expect("Error loading games")
+   };
+   let context = IndexContext { games: formatted_games, count: games_count };
    Template::render("index", &context)
 }
 
