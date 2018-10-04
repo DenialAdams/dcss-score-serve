@@ -203,7 +203,7 @@ impl From<crawl_model::db_model::Game> for FormattedGame {
          "daddy" | "fuckboy3000" | "peepeedarts" => "James",
          "sweetBro" => "Luca",
          "hellaJeff" | "bigBootyJudy" => "Ben H",
-         "Richard" | "BoonShekel" | "THEBLIMP" => "Ben S",
+         "Richard" | "BoonShekel" | "THEBLIMP" | "xXBloodSuckerXx" => "Ben S",
          "bobjr93" => "Brennan",
          "jish" => "Josh S",
          "GrapeApe" => "Mason C.",
