@@ -246,7 +246,7 @@ fn hi_query(state: State<DatabasePool>, game_query: GameQuery) -> Template {
             expression = expression.order(dur.asc());
          }
          SortOption::New => {
-            expression = expression.order(start.desc());
+            expression = expression.order(end.desc());
          }
          SortOption::Score => {
             expression = expression.order(score.desc());
