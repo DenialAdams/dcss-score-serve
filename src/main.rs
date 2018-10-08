@@ -76,10 +76,11 @@ impl<'a> rocket::request::FromFormValue<'a> for God {
 }
 
 enum SortOption {
-   Duration,
+   Longest,
+   Shortest,
    New,
    Score,
-   Turns
+   Turns,
 }
 
 impl<'a> rocket::request::FromFormValue<'a> for SortOption {
@@ -87,7 +88,8 @@ impl<'a> rocket::request::FromFormValue<'a> for SortOption {
 
    fn from_form_value(param: &'a rocket::http::RawStr) -> Result<SortOption, ()> {
       match param.percent_decode_lossy().to_ascii_lowercase().as_ref() {
-         "duration" => Ok(SortOption::Duration),
+         "longest" => Ok(SortOption::Longest),
+         "shortest" => Ok(SortOption::Shortest),
          "new" => Ok(SortOption::New),
          "score" => Ok(SortOption::Score),
          "turns" => Ok(SortOption::Turns),
@@ -242,8 +244,11 @@ fn hi_query(state: State<DatabasePool>, game_query: GameQuery) -> Template {
       use crawl_model::db_schema::games::dsl::*;
       let mut expression = games.into_boxed();
       match game_query.sort_by {
-         SortOption::Duration => {
+         SortOption::Shortest => {
             expression = expression.order(dur.asc());
+         }
+         SortOption::Longest => {
+            expression = expression.order(dur.desc());
          }
          SortOption::New => {
             expression = expression.order(end.desc());
@@ -286,7 +291,10 @@ fn hi_query(state: State<DatabasePool>, game_query: GameQuery) -> Template {
       use crawl_model::db_schema::games::dsl::*;
       games.count().get_result(&*connection).expect("Error loading games")
    };
-   let context = IndexContext { games: formatted_games, count: games_count };
+   let context = IndexContext {
+      games: formatted_games,
+      count: games_count,
+   };
    Template::render("index", &context)
 }
 
@@ -446,7 +454,8 @@ fn deaths(state: State<DatabasePool>) -> Template {
       .map(|x| FormattedFreqItem {
          value: x.0,
          frequency: x.1,
-      }).collect();
+      })
+      .collect();
    let context = FreqContext {
       name: "Cause of Death",
       items: formatted_items,
@@ -474,7 +483,8 @@ fn places(state: State<DatabasePool>) -> Template {
       .map(|x| FormattedFreqItem {
          value: x.0,
          frequency: x.1,
-      }).collect();
+      })
+      .collect();
    let context = FreqContext {
       name: "Final Location",
       items: formatted_items,
@@ -504,7 +514,8 @@ fn species(state: State<DatabasePool>) -> Template {
             std::mem::transmute::<i64, crawl_model::data::Species>(x.0)
          }),
          frequency: x.1,
-      }).collect();
+      })
+      .collect();
    let context = FreqContext {
       name: "Species",
       items: formatted_items,
@@ -534,7 +545,8 @@ fn backgrounds(state: State<DatabasePool>) -> Template {
             std::mem::transmute::<i64, crawl_model::data::Background>(x.0)
          }),
          frequency: x.1,
-      }).collect();
+      })
+      .collect();
    let context = FreqContext {
       name: "Background",
       items: formatted_items,
@@ -564,7 +576,8 @@ fn gods(state: State<DatabasePool>) -> Template {
             std::mem::transmute::<i64, crawl_model::data::God>(x.0)
          }),
          frequency: x.1,
-      }).collect();
+      })
+      .collect();
    let context = FreqContext {
       name: "God",
       items: formatted_items,
@@ -597,7 +610,8 @@ fn main() {
             user,
             places
          ],
-      ).manage(pool)
+      )
+      .manage(pool)
       .attach(Template::fairing())
       .launch();
 }
