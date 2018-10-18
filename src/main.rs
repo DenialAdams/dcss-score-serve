@@ -171,6 +171,7 @@ struct UserContext {
    pub name: String,
    pub nemesis: String,
    pub death_spot: String,
+   pub num_runes: i64,
 }
 
 fn seconds_to_humantime(mut seconds: i64) -> String {
@@ -318,6 +319,17 @@ fn user(state: State<DatabasePool>, name_param: String) -> Template {
          .get_result(&*connection)
          .expect("Error loading games")
    };
+   let num_runes: i64 = {
+      use crawl_model::db_schema::games::dsl::*;
+      use diesel::dsl::sql;
+      use diesel::sql_types::Double;
+      games
+         .select(sql::<Double>("COUNT(games.tmsg)"))
+         .first(&*connection)
+         .optional()
+         .expect("Error loading games")
+         .unwrap_or(0.0) as i64
+   };
    let fav_bg = {
       let fav_bg_id: Option<i64> = {
          use crawl_model::db_schema::games::dsl::*;
@@ -430,6 +442,7 @@ fn user(state: State<DatabasePool>, name_param: String) -> Template {
       name: name_param,
       nemesis: fav_nemesis,
       death_spot: fav_death_spot,
+      num_runes: num_runes,
    };
    Template::render("user", &context)
 }

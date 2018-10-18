@@ -19,6 +19,8 @@
       {{ death_spot }}
       <h1>Games</h1>
       {{ wins }} <a href="/?name={{ name }}&victory=true">wins</a>, {{ games }} <a href="/?name={{ name }}">games</a> ({{ winrate }}%)
+      <h1>Total Runes</h1>
+      {{ num_runes }}
     </div>
   </body>
 </html>

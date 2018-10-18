@@ -5,10 +5,11 @@ authors = ["Richard McCormack <brick@brick.codes>"]
 edition = "2018"
 
 [dependencies]
+bigdecimal = "0.0.14"
 crawl_model = { git = "https://github.com/DenialAdams/crawl_model" }
 rocket = "0.3"
 rocket_codegen = "0.3"
-diesel = { version = "1", features = ["sqlite", "32-column-tables"] }
+diesel = { version = "1", features = ["sqlite", "32-column-tables", "numeric"] }
 dotenv = "0.13"
 serde = "1"
 serde_derive = "1"
@@ -16,6 +17,6 @@ r2d2 = "0.8"
 r2d2-diesel = "1"
 
 [dependencies.rocket_contrib]
-version = "0.3.3"
+version = "0.3"
 default-features = false
 features = ["tera_templates", "json"]
