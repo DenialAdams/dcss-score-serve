@@ -299,17 +299,16 @@ fn hi_query(state: State<DatabasePool>, game_query: GameQuery) -> Template {
    Template::render("index", &context)
 }
 
-
 fn get_user_context(state: State<DatabasePool>, name_param: Option<String>) -> UserContext {
-   fn get_query<'a>(name_param: Option<&'a String>) -> crawl_model::db_schema::games::BoxedQuery<'a, diesel::sqlite::Sqlite> {
+   fn get_query<'a>(
+      name_param: Option<&'a String>,
+   ) -> crawl_model::db_schema::games::BoxedQuery<'a, diesel::sqlite::Sqlite> {
       use crawl_model::db_schema::games::dsl::*;
       if let Some(val) = name_param {
-         games
-            .filter(name.eq(val))
-            .into_boxed()
+         games.filter(name.eq(val)).into_boxed()
       } else {
          games.into_boxed()
-      } 
+      }
    }
    let connection = state.get().expect("Timeout waiting for pooled connection");
    let num_games: i64 = {
@@ -329,7 +328,7 @@ fn get_user_context(state: State<DatabasePool>, name_param: Option<String>) -> U
    let num_runes: i64 = {
       use diesel::dsl::sql;
       use diesel::sql_types::Double;
-get_query(name_param.as_ref())
+      get_query(name_param.as_ref())
          .select(sql::<Double>("SUM(games.runes)"))
          .first(&*connection)
          .optional()
@@ -340,7 +339,7 @@ get_query(name_param.as_ref())
       let fav_bg_id: Option<i64> = {
          use crawl_model::db_schema::games::dsl::*;
          use diesel::dsl::count;
-get_query(name_param.as_ref())
+         get_query(name_param.as_ref())
             .order(count(background_id).desc())
             .select(background_id)
             .group_by(background_id)
@@ -359,7 +358,7 @@ get_query(name_param.as_ref())
       let fav_species_id: Option<i64> = {
          use crawl_model::db_schema::games::dsl::*;
          use diesel::dsl::count;
-get_query(name_param.as_ref())
+         get_query(name_param.as_ref())
             .order(count(species_id).desc())
             .select(species_id)
             .group_by(species_id)
@@ -378,7 +377,7 @@ get_query(name_param.as_ref())
       let fav_god_id: Option<i64> = {
          use crawl_model::db_schema::games::dsl::*;
          use diesel::dsl::count;
-get_query(name_param.as_ref())
+         get_query(name_param.as_ref())
             .filter(god_id.ne(crawl_model::data::God::Atheist as i64))
             .order(count(god_id).desc())
             .select(god_id)
@@ -398,7 +397,7 @@ get_query(name_param.as_ref())
       let fav_nemesis: Option<String> = {
          use crawl_model::db_schema::games::dsl::*;
          use diesel::dsl::count;
-get_query(name_param.as_ref())
+         get_query(name_param.as_ref())
             .filter(tmsg.ne("got out of the dungeon alive"))
             .filter(tmsg.ne("quit the game"))
             .filter(tmsg.ne("safely got out of the dungeon"))
@@ -419,7 +418,7 @@ get_query(name_param.as_ref())
       let fav_death_spot: Option<String> = {
          use crawl_model::db_schema::games::dsl::*;
          use diesel::dsl::count;
-get_query(name_param.as_ref())
+         get_query(name_param.as_ref())
             .order(count(place).desc())
             .select(place)
             .group_by(place)
