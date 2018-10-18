@@ -325,7 +325,7 @@ fn user(state: State<DatabasePool>, name_param: String) -> Template {
       use diesel::sql_types::Double;
       games
          .filter(name.eq(&name_param))
-         .select(sql::<Double>("COUNT(games.tmsg)"))
+         .select(sql::<Double>("SUM(games.runes)"))
          .first(&*connection)
          .optional()
          .expect("Error loading games")
