@@ -11,6 +11,8 @@
       {{ fav_species }}
       <h1>Favorite Background</h1>
       {{ fav_background }}
+      <h1>Favorite Combo</h1>
+      {{ fav_combo }}
       <h1>Favorite God</h1>
       {{ fav_god }}
       <h1>Nemesis</h1>

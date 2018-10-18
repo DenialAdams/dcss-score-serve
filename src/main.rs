@@ -172,6 +172,7 @@ struct UserContext {
    pub nemesis: String,
    pub death_spot: String,
    pub num_runes: i64,
+   pub fav_combo: String,
 }
 
 fn seconds_to_humantime(mut seconds: i64) -> String {
@@ -373,6 +374,26 @@ fn get_user_context(state: State<DatabasePool>, name_param: Option<String>) -> U
          "N/A".into()
       }
    };
+   let fav_combo = {
+      let fav_combo_ids: Option<(i64, i64)> = {
+         use crawl_model::db_schema::games::dsl::*;
+         use diesel::dsl::count;
+         get_query(name_param.as_ref())
+            .select((species_id, background_id))
+            .group_by((species_id, background_id))
+            .order(count((species_id, background_id)))
+            .first(&*connection)
+            .optional()
+            .expect("Error loading games")
+      };
+      if let Some((species_id, bg_id)) = fav_combo_ids {
+         let species = unsafe { std::mem::transmute::<i64, crawl_model::data::Species>(species_id) };
+         let background = unsafe { std::mem::transmute::<i64, crawl_model::data::Background>(bg_id) };
+         format!("{:?} {:?}", species, background)
+      } else {
+         "N/A".into()
+      }
+   };
    let fav_god = {
       let fav_god_id: Option<i64> = {
          use crawl_model::db_schema::games::dsl::*;
@@ -443,6 +464,7 @@ fn get_user_context(state: State<DatabasePool>, name_param: Option<String>) -> U
       nemesis: fav_nemesis,
       death_spot: fav_death_spot,
       num_runes: num_runes,
+      fav_combo: fav_combo,
    }
 }
 
