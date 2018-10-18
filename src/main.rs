@@ -324,6 +324,7 @@ fn user(state: State<DatabasePool>, name_param: String) -> Template {
       use diesel::dsl::sql;
       use diesel::sql_types::Double;
       games
+         .filter(name.eq(&name_param))
          .select(sql::<Double>("COUNT(games.tmsg)"))
          .first(&*connection)
          .optional()
