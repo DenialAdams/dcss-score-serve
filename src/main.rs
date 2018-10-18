@@ -299,32 +299,37 @@ fn hi_query(state: State<DatabasePool>, game_query: GameQuery) -> Template {
    Template::render("index", &context)
 }
 
-#[get("/u/<name_param>")]
-fn user(state: State<DatabasePool>, name_param: String) -> Template {
+
+fn get_user_context(state: State<DatabasePool>, name_param: Option<String>) -> UserContext {
+   fn get_query<'a>(name_param: Option<&'a String>) -> crawl_model::db_schema::games::BoxedQuery<'a, diesel::sqlite::Sqlite> {
+      use crawl_model::db_schema::games::dsl::*;
+      if let Some(val) = name_param {
+         games
+            .filter(name.eq(val))
+            .into_boxed()
+      } else {
+         games.into_boxed()
+      } 
+   }
    let connection = state.get().expect("Timeout waiting for pooled connection");
    let num_games: i64 = {
-      use crawl_model::db_schema::games::dsl::*;
-      games
-         .filter(name.eq(&name_param))
+      get_query(name_param.as_ref())
          .count()
          .get_result(&*connection)
          .expect("Error loading games")
    };
    let num_wins: i64 = {
       use crawl_model::db_schema::games::dsl::*;
-      games
-         .filter(name.eq(&name_param))
+      get_query(name_param.as_ref())
          .filter(tmsg.eq("escaped with the Orb"))
          .count()
          .get_result(&*connection)
          .expect("Error loading games")
    };
    let num_runes: i64 = {
-      use crawl_model::db_schema::games::dsl::*;
       use diesel::dsl::sql;
       use diesel::sql_types::Double;
-      games
-         .filter(name.eq(&name_param))
+get_query(name_param.as_ref())
          .select(sql::<Double>("SUM(games.runes)"))
          .first(&*connection)
          .optional()
@@ -335,8 +340,7 @@ fn user(state: State<DatabasePool>, name_param: String) -> Template {
       let fav_bg_id: Option<i64> = {
          use crawl_model::db_schema::games::dsl::*;
          use diesel::dsl::count;
-         games
-            .filter(name.eq(&name_param))
+get_query(name_param.as_ref())
             .order(count(background_id).desc())
             .select(background_id)
             .group_by(background_id)
@@ -355,8 +359,7 @@ fn user(state: State<DatabasePool>, name_param: String) -> Template {
       let fav_species_id: Option<i64> = {
          use crawl_model::db_schema::games::dsl::*;
          use diesel::dsl::count;
-         games
-            .filter(name.eq(&name_param))
+get_query(name_param.as_ref())
             .order(count(species_id).desc())
             .select(species_id)
             .group_by(species_id)
@@ -375,8 +378,7 @@ fn user(state: State<DatabasePool>, name_param: String) -> Template {
       let fav_god_id: Option<i64> = {
          use crawl_model::db_schema::games::dsl::*;
          use diesel::dsl::count;
-         games
-            .filter(name.eq(&name_param))
+get_query(name_param.as_ref())
             .filter(god_id.ne(crawl_model::data::God::Atheist as i64))
             .order(count(god_id).desc())
             .select(god_id)
@@ -396,8 +398,7 @@ fn user(state: State<DatabasePool>, name_param: String) -> Template {
       let fav_nemesis: Option<String> = {
          use crawl_model::db_schema::games::dsl::*;
          use diesel::dsl::count;
-         games
-            .filter(name.eq(&name_param))
+get_query(name_param.as_ref())
             .filter(tmsg.ne("got out of the dungeon alive"))
             .filter(tmsg.ne("quit the game"))
             .filter(tmsg.ne("safely got out of the dungeon"))
@@ -418,8 +419,7 @@ fn user(state: State<DatabasePool>, name_param: String) -> Template {
       let fav_death_spot: Option<String> = {
          use crawl_model::db_schema::games::dsl::*;
          use diesel::dsl::count;
-         games
-            .filter(name.eq(&name_param))
+get_query(name_param.as_ref())
             .order(count(place).desc())
             .select(place)
             .group_by(place)
@@ -433,18 +433,29 @@ fn user(state: State<DatabasePool>, name_param: String) -> Template {
          "N/A".into()
       }
    };
-   let context = UserContext {
+   UserContext {
       fav_background: fav_bg,
       fav_species: fav_species,
       fav_god: fav_god,
       games: num_games,
       wins: num_wins,
       winrate: format!("{:.2}", (num_wins as f64 / num_games as f64) * 100.0),
-      name: name_param,
+      name: name_param.unwrap_or_else(|| "Server".into()),
       nemesis: fav_nemesis,
       death_spot: fav_death_spot,
       num_runes: num_runes,
-   };
+   }
+}
+
+#[get("/u/<name_param>")]
+fn user(state: State<DatabasePool>, name_param: String) -> Template {
+   let context = get_user_context(state, Some(name_param));
+   Template::render("user", &context)
+}
+
+#[get("/everyone")]
+fn everyone(state: State<DatabasePool>) -> Template {
+   let context = get_user_context(state, None);
    Template::render("user", &context)
 }
 
@@ -622,7 +633,8 @@ fn main() {
             backgrounds,
             gods,
             user,
-            places
+            places,
+            everyone
          ],
       )
       .manage(pool)
