@@ -380,8 +380,8 @@ fn get_user_context(state: State<DatabasePool>, name_param: Option<String>) -> U
          use diesel::dsl::count_star;
          get_query(name_param.as_ref())
             .select((species_id, background_id))
-            .order(count_star())
             .group_by((species_id, background_id))
+            .order(count_star())
             .first(&*connection)
             .optional()
             .expect("Error loading games")
