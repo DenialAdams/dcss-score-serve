@@ -377,11 +377,10 @@ fn get_user_context(state: State<DatabasePool>, name_param: Option<String>) -> U
    let fav_combo = {
       let fav_combo_ids: Option<(i64, i64)> = {
          use crawl_model::db_schema::games::dsl::*;
-         use diesel::dsl::count;
+         use diesel::dsl::count_star;
          get_query(name_param.as_ref())
             .select((species_id, background_id))
-            .group_by((species_id, background_id))
-            .order(count((species_id, background_id)))
+            .order(count_star())
             .first(&*connection)
             .optional()
             .expect("Error loading games")
