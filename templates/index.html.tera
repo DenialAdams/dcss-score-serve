@@ -43,7 +43,7 @@
               </tr>
         {% endfor %}
       </table>
-      Querying <strong>{{ count }}</strong> games.
+      Matched <strong>{{ matched_count }}</strong> out of <strong>{{ total_count }}</strong> games.
     </div>
   </body>
 </html>

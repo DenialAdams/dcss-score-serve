@@ -130,7 +130,8 @@ impl Default for GameQuery {
 #[derive(Serialize)]
 struct IndexContext {
    games: Vec<FormattedGame>,
-   count: i64,
+   total_count: i64,
+   matched_count: i64,
 }
 
 #[derive(Serialize)]
@@ -241,8 +242,9 @@ fn hiscores(state: State<DatabasePool>) -> Template {
 
 #[get("/?<game_query>")]
 fn hi_query(state: State<DatabasePool>, game_query: GameQuery) -> Template {
-   let connection = state.get().expect("Timeout waiting for pooled connection");
-   let games = {
+   fn get_query<'a>(
+      game_query: &'a GameQuery,
+   ) -> crawl_model::db_schema::games::BoxedQuery<'a, diesel::sqlite::Sqlite> {
       use crawl_model::db_schema::games::dsl::*;
       let mut expression = games.into_boxed();
       match game_query.sort_by {
@@ -262,16 +264,16 @@ fn hi_query(state: State<DatabasePool>, game_query: GameQuery) -> Template {
             expression = expression.order(turn.asc());
          }
       }
-      if let Some(god) = game_query.god {
-         expression = expression.filter(god_id.eq(*god as i64));
+      if let Some(ref god) = game_query.god {
+         expression = expression.filter(god_id.eq(**god as i64));
       }
-      if let Some(background) = game_query.background {
-         expression = expression.filter(background_id.eq(*background as i64));
+      if let Some(ref background) = game_query.background {
+         expression = expression.filter(background_id.eq(**background as i64));
       }
-      if let Some(species) = game_query.species {
-         expression = expression.filter(species_id.eq(*species as i64));
+      if let Some(ref species) = game_query.species {
+         expression = expression.filter(species_id.eq(**species as i64));
       }
-      if let Some(qname) = game_query.name {
+      if let Some(ref qname) = game_query.name {
          expression = expression.filter(name.eq(qname));
       }
       if let Some(nrunes) = game_query.runes {
@@ -284,18 +286,31 @@ fn hi_query(state: State<DatabasePool>, game_query: GameQuery) -> Template {
          };
       }
       expression
+   }
+   let connection = state.get().expect("Timeout waiting for pooled connection");
+   let games = {
+      let expression = get_query(&game_query);
+      expression
          .limit(100)
          .load::<crawl_model::db_model::Game>(&*connection)
          .expect("Error loading games")
    };
+   let matched_count: i64 = {
+      let expression = get_query(&game_query);
+      expression
+         .count()
+         .get_result(&*connection)
+         .expect("Error loading games")
+   };
    let formatted_games = games.into_iter().map(|x| x.into()).collect();
-   let games_count: i64 = {
+   let total_count: i64 = {
       use crawl_model::db_schema::games::dsl::*;
       games.count().get_result(&*connection).expect("Error loading games")
    };
    let context = IndexContext {
       games: formatted_games,
-      count: games_count,
+      total_count: total_count,
+      matched_count: matched_count,
    };
    Template::render("index", &context)
 }
